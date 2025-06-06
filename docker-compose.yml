@@ -1,0 +1,16 @@
+services:
+  mysql:
+    image: mysql:8.0.34
+    container_name: mysql-jpa
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: test       # 자동 생성할 DB 이름
+      MYSQL_USER: test           # 자동 생성할 사용자 이름
+      MYSQL_PASSWORD: 1234       # 사용자 비밀번호
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+volumes:
+  mysql-data:
