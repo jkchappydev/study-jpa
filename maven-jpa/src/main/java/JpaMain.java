@@ -1,4 +1,5 @@
 import jpabook.jpashop.domain.Member;
+import jpabook.jpashop.domain.Team;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -7,7 +8,7 @@ import javax.persistence.Persistence;
 
 public class JpaMain {
     public static void main(String[] args) {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("hello");
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("maven-jpa");
 
         EntityManager em = emf.createEntityManager();
 
@@ -15,11 +16,27 @@ public class JpaMain {
         tx.begin();
 
         try {
-            Member member = new Member();
-            member.setId(1L);
-            member.setName("HelloA");
+            // 저장
+            Team team = new Team();
+            team.setName("TeamA");
+            em.persist(team);
 
-            em.persist(member); // 생성
+            Member member = new Member();
+            member.setUsername("member1");
+            // member.setTeamId(team.getId());
+            member.setTeam(team); // 바로 가능
+            em.persist(member);
+
+            // 조회
+            Member findMember = em.find(Member.class, member.getId());
+            // Team findTeam = em.find(Team.class, findMember.getTeamId());
+            Team findTeam = findMember.getTeam(); // 바로 가능
+            System.out.println(findTeam.getName());
+
+            // 수정
+            Team newTeam = em.find(Team.class, 100L);
+            newTeam.setName("TeamA1");
+            findMember.setTeam(newTeam);
 
             tx.commit();
         } catch (Exception e) {

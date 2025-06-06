@@ -16,7 +16,7 @@ public class Member {
     private Long id;
 
     @Column(name = "USERNAME")
-    private String name;
+    private String username;
 
     @ManyToOne // 하나의 팀에 여러명의 멤버가 속함 (멤버 입장에서 Many, 팀이 One)
     @JoinColumn(name = "TEAM_ID") // 조인 해야 되는 컬림
