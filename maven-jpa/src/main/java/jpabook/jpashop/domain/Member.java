@@ -17,13 +17,11 @@ public class Member {
     @Column(name = "MEMBER_ID")
     private Long id;
 
-    @ManyToOne // 다대일 단방향
-    @JoinColumn(name = "TEAM_ID")
-    private Team team;
-
     @Column(name = "USERNAME")
     private String username;
 
-
+    @ManyToOne // 일대다 양방향 (이런 매핑은 공식적으로 존재 X, 사용하지 말자)
+    @JoinColumn(name = "TEAM_ID", insertable = false, updatable = false)
+    private Team team;
 
 }

@@ -17,23 +17,15 @@ public class JpaMain {
         tx.begin();
 
         try {
-            // 저장
-            Team team = new Team();
-            team.setName("TeamA");
-            em.persist(team);
-
             Member member = new Member();
             member.setUsername("member1");
             em.persist(member);
 
-            team.addMember(member); // 이렇게 가능해진다.
-
-            Team findTeam = em.find(Team.class, team.getId());
-            List<Member> members = findTeam.getMembers();
-
-            for (Member m : members) {
-                System.out.println("member: " + m.getUsername());
-            }
+            Team team = new Team();
+            team.setName("teamA");
+            // 굉장히 어색해진다. (Team을 삽일할 때마다 Member의 외래키를 update해야 함. -> 성능상의 단점발생)
+            team.getMembers().add(member);
+            em.persist(team);
 
             tx.commit();
         } catch (Exception e) {
