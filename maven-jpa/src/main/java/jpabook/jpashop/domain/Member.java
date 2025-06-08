@@ -22,4 +22,10 @@ public class Member {
     @JoinColumn(name = "TEAM_ID") // 조인 해야 되는 컬림
     private Team team; // 이렇게 변경
 
+    // 주석 처리
+    /*public void changeTeam(Team team) {
+        this.team = team;
+        team.getMembers().add(this);
+    }*/
+
 }
