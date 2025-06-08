@@ -19,13 +19,7 @@ public class Team {
 
     private String name;
 
-    // Team이 기준이 될 경우
-    public void addMember(Member member) {
-        member.setTeam(this);
-        members.add(member);
-    }
-
-    @OneToMany(mappedBy = "team")
-    private List<Member> members = new ArrayList<>();
+    @OneToMany(mappedBy = "team") // 다대일 양방향
+    List<Member> members = new ArrayList<>();
 
 }
