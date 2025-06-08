@@ -19,8 +19,4 @@ public class Team {
 
     private String name;
 
-    @OneToMany // 일대다 단방향
-    @JoinColumn(name = "TEAM_ID")
-    List<Member> members = new ArrayList<>();
-
 }
