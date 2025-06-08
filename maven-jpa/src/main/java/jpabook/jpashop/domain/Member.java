@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -18,14 +20,13 @@ public class Member {
     @Column(name = "USERNAME")
     private String username;
 
-    @ManyToOne // 하나의 팀에 여러명의 멤버가 속함 (멤버 입장에서 Many, 팀이 One)
-    @JoinColumn(name = "TEAM_ID") // 조인 해야 되는 컬림
-    private Team team; // 이렇게 변경
+    @ManyToOne
+    @JoinColumn(name = "TEAM_ID")
+    private Team team;
 
-    // 주석 처리
-    /*public void changeTeam(Team team) {
-        this.team = team;
-        team.getMembers().add(this);
-    }*/
+    // 양방향 연관관계 설정 (외래키를 Order에서 관리하기 때문에 주인으로 설정하지 않음)
+    // Order가 가지고있는 member 외래키와 매핑
+    @OneToMany(mappedBy = "member")
+    List<Order> orders = new ArrayList<>();
 
 }
