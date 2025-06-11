@@ -19,15 +19,11 @@ public class Order {
     @Column(name = "ORDER_ID")
     private Long id;
 
-    // @Column(name = "MEMBER_ID")
-    // private Long memberId;
-
-    // 연관관계 매핑
     @ManyToOne
     @JoinColumn(name = "MEMBER_ID")
     private Member member;
 
-    @OneToMany(mappedBy = "order") // OrderItem의 ORDER_ID가, Order의 외래키
+    @OneToMany(mappedBy = "order")
     private List<OrderItem> orderItems = new ArrayList<>();
 
     private LocalDateTime orderDate;
@@ -35,7 +31,10 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
-    // 양방향 연관관계 (Order <-> OrderItem) - 연관관계 편의 메서드 작성
+    @OneToOne
+    @JoinColumn(name = "DELIVERY_ID") // 추가: 주인이 아님
+    private Delivery delivery;
+
     public void addOrderItem(OrderItem orderItem) {
         orderItems.add(orderItem);
         orderItem.setOrder(this);
