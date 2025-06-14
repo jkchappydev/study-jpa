@@ -1,12 +1,9 @@
-import jpabook.jpashop.domain.Item;
-import jpabook.jpashop.domain.Member;
-import jpabook.jpashop.domain.Movie;
+import jpabook.jpashop.domain.Book;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
-import java.time.LocalDateTime;
 
 public class JpaMain {
     public static void main(String[] args) {
@@ -18,15 +15,10 @@ public class JpaMain {
         tx.begin();
 
         try {
-            Member member = new Member();
-            member.setUsername("user1");
-            member.setCreatedBy("kim");
-            member.setCreatedDate(LocalDateTime.now());
-
-            em.persist(member);
-
-            em.flush();
-            em.clear();
+            Book book = new Book();
+            book.setName("JPA");
+            book.setAuthor("김영한");
+            em.persist(book);
 
             tx.commit();
         } catch (Exception e) {

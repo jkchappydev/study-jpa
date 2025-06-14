@@ -4,19 +4,18 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 @Setter
 @Entity
-public class Member extends BaseEntity {
+public class Delivery extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "MEMBER_ID")
+    @Column(name = "DELIVERY_ID")
     private Long id;
 
-    private String name;
+    @OneToOne(mappedBy = "delivery")
+    private Order orders;
 
     private String city;
 
@@ -24,7 +23,7 @@ public class Member extends BaseEntity {
 
     private String zipCode;
 
-    @OneToMany(mappedBy = "member") // 연관관계의 주인이 아님.
-    private List<Order> orders = new ArrayList<>();
+    @Enumerated(EnumType.STRING)
+    private DeliveryStatus status;
 
 }
