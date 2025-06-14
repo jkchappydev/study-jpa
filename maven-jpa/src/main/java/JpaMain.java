@@ -1,10 +1,12 @@
 import jpabook.jpashop.domain.Item;
+import jpabook.jpashop.domain.Member;
 import jpabook.jpashop.domain.Movie;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
+import java.time.LocalDateTime;
 
 public class JpaMain {
     public static void main(String[] args) {
@@ -16,24 +18,15 @@ public class JpaMain {
         tx.begin();
 
         try {
-            Movie movie = new Movie();
-            // Movie 테이블
-            movie.setActor("aaaa");
-            movie.setDirector("bbbb");
+            Member member = new Member();
+            member.setUsername("user1");
+            member.setCreatedBy("kim");
+            member.setCreatedDate(LocalDateTime.now());
 
-            // Item 테이블
-            movie.setName("제목제목");
-            movie.setPrice(10000);
-            em.persist(movie);
+            em.persist(member);
 
             em.flush();
             em.clear();
-
-            Movie findMovie = em.find(Movie.class, movie.getId());
-            System.out.println("findMovie = " + findMovie.getName());
-
-//            Item item = em.find(Item.class, movie.getId());
-//            System.out.println("item = " + item);
 
             tx.commit();
         } catch (Exception e) {
