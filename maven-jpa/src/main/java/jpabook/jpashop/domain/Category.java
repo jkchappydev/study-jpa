@@ -22,7 +22,7 @@ public class Category extends BaseEntity {
     private List<CategoryItem> categoryItems = new ArrayList<>();
 
     //======== 셀프 ========
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "PARENT_ID")
     private Category parent;
 
