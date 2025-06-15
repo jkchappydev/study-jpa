@@ -24,6 +24,10 @@ public class Member extends BaseEntity {
 
     private String zipCode;
 
+    @ManyToOne
+    @JoinColumn(name = "TEAM_ID")
+    private Team team;
+
     @OneToMany(mappedBy = "member") // 연관관계의 주인이 아님.
     private List<Order> orders = new ArrayList<>();
 
