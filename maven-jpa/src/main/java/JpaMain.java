@@ -1,11 +1,13 @@
 import jpabook.jpashop.domain.Book;
 import jpabook.jpashop.domain.Member;
+import jpabook.jpashop.domain.Team;
 import org.hibernate.Hibernate;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
+import java.util.List;
 
 public class JpaMain {
     public static void main(String[] args) {
@@ -17,27 +19,37 @@ public class JpaMain {
         tx.begin();
 
         try {
-            Member member1 = new Member();
-            member1.setName("John Doe");
-            em.persist(member1);
+            Team team1 = new Team();
+            team1.setName("Team 1");
+            em.persist(team1);
+
+            Team team2 = new Team();
+            team2.setName("Team 2");
+            em.persist(team2);
+
+            Member member = new Member();
+            member.setName("John Doe");
+            member.setTeam(team1);
+            em.persist(member);
 
             Member member2 = new Member();
-            member2.setName("kim");
+            member2.setName("John Doe");
+            member2.setTeam(team2);
             em.persist(member2);
 
             em.flush();
             em.clear();
 
-            Member refMember = em.getReference(Member.class, member1.getId());
-            // 프록시 클래스 확인
-            System.out.println("refMember: " + refMember.getClass()); // refMember: class jpabook.jpashop.domain.Member$HibernateProxy$7XXfGFhF
+            // fetct 조인 (현재 Team에 지연 로딩 설정 적용)
+            em.createQuery("select m from Member m join fetch m.team", Member.class).getResultList();
 
-            // 프록시 인스턴스 초기화 여부 확인
-            System.out.println("isLoaded=" + emf.getPersistenceUnitUtil().isLoaded(refMember)); // isLoaded=false
-            // refMember.getName(); // 해당 방법으로도 프록시 초기화가 되긴 하지만 굉장히 보기 좋지 않음 방법
-            Hibernate.initialize(refMember); // Hibernate에서 제공하는 강제 프록시 초기화
-            System.out.println("isLoaded=" + emf.getPersistenceUnitUtil().isLoaded(refMember)); // isLoaded=true
-
+            // 현재 Team에 지연 로딩 설정 적용
+//            List<Member> members = em.createQuery("select m from Member m", Member.class).getResultList(); // 여기까진 쿼리 1번 (Member만 가져옴)
+//
+//            for (Member m : members) {
+//                m.getTeam().getName(); // Team을 지연로딩 → 매번 쿼리 발생 (N번)
+//            }
+            // 총 쿼리 수: 1 + N
 
             tx.commit();
         } catch (Exception e) {

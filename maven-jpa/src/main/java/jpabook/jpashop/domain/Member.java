@@ -24,7 +24,8 @@ public class Member extends BaseEntity {
 
     private String zipCode;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY) // 지연 로딩 설정 (Team을 프록시 객체로 조회하게 된다. 즉, Member 클래스만 DB에서 조회)
+    // @ManyToOne(fetch = FetchType.EAGER) // 즉시 로딩 설정 (Member와 Team을 함께 조회한다.)
     @JoinColumn(name = "TEAM_ID")
     private Team team;
 
