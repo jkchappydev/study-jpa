@@ -1,6 +1,4 @@
-import jpabook.jpashop.domain.Book;
-import jpabook.jpashop.domain.Member;
-import jpabook.jpashop.domain.Team;
+import jpabook.jpashop.domain.*;
 import org.hibernate.Hibernate;
 
 import javax.persistence.EntityManager;
@@ -19,42 +17,24 @@ public class JpaMain {
         tx.begin();
 
         try {
-            Team team1 = new Team();
-            team1.setName("Team 1");
-            em.persist(team1);
+            Child child1 = new Child();
+            Child child2 = new Child();
 
-            Team team2 = new Team();
-            team2.setName("Team 2");
-            em.persist(team2);
+            Parent parent = new Parent();
+            parent.addChild(child1);
+            parent.addChild(child2);
 
-            Member member = new Member();
-            member.setName("John Doe");
-            member.setTeam(team1);
-            em.persist(member);
-
-            Member member2 = new Member();
-            member2.setName("John Doe");
-            member2.setTeam(team2);
-            em.persist(member2);
+            em.persist(parent);
 
             em.flush();
             em.clear();
 
-            // fetct 조인 (현재 Team에 지연 로딩 설정 적용)
-            em.createQuery("select m from Member m join fetch m.team", Member.class).getResultList();
-
-            // 현재 Team에 지연 로딩 설정 적용
-//            List<Member> members = em.createQuery("select m from Member m", Member.class).getResultList(); // 여기까진 쿼리 1번 (Member만 가져옴)
-//
-//            for (Member m : members) {
-//                m.getTeam().getName(); // Team을 지연로딩 → 매번 쿼리 발생 (N번)
-//            }
-            // 총 쿼리 수: 1 + N
+            Parent findParent = em.find(Parent.class, parent.getId());
+            findParent.getChildList().remove(0); // orphanRemoval = true에 의해 delete 쿼리가 실행된다.
 
             tx.commit();
         } catch (Exception e) {
             tx.rollback();
-            e.printStackTrace(); // 예외 처리 확인
         } finally {
             em.close();
         }
