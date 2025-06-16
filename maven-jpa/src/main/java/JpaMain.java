@@ -17,20 +17,11 @@ public class JpaMain {
         tx.begin();
 
         try {
-            Child child1 = new Child();
-            Child child2 = new Child();
-
-            Parent parent = new Parent();
-            parent.addChild(child1);
-            parent.addChild(child2);
-
-            em.persist(parent);
-
-            em.flush();
-            em.clear();
-
-            Parent findParent = em.find(Parent.class, parent.getId());
-            findParent.getChildList().remove(0); // orphanRemoval = true에 의해 delete 쿼리가 실행된다.
+            Member2 member2 = new Member2();
+            member2.setName("John");
+            member2.setHomeAddress(new Address("city", "address", "10000"));
+            member2.setWordPeriod(new Period());
+            em.persist(member2);
 
             tx.commit();
         } catch (Exception e) {
