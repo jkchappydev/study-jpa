@@ -3,15 +3,14 @@ package jpabook.jpashop.domain;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import javax.persistence.Embeddable;
 
 @Getter
-@Setter
+// Setter를 사용하지 않는다. (불변 객체로 만듬)
 @NoArgsConstructor
 @AllArgsConstructor
-@Embeddable
+@Embeddable // 값 타입
 public class Address {
 
     private String city;

@@ -9,7 +9,7 @@ import javax.persistence.Embeddable;
 import java.time.LocalDateTime;
 
 @Getter
-@Setter
+// @Setter
 @NoArgsConstructor // 기본 생성자 필수
 @AllArgsConstructor
 @Embeddable // 값 타입임을 정의
