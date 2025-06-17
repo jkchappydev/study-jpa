@@ -1,11 +1,13 @@
-import jpabook.jpashop.domain.*;
-import org.hibernate.Hibernate;
+import jpabook.jpashop.domain.Address;
+import jpabook.jpashop.domain.AddressEntity;
+import jpabook.jpashop.domain.Member3;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 import java.util.List;
+import java.util.Set;
 
 public class JpaMain {
     public static void main(String[] args) {
@@ -17,27 +19,46 @@ public class JpaMain {
         tx.begin();
 
         try {
-            Address address = new Address("city", "street", "10000");
-
-            Member2 member = new Member2();
+            // 값 타입 저장 예제
+            Member3 member = new Member3();
             member.setName("John Doe");
-            member.setHomeAddress(address);
+            member.setHomeAddress(new Address("homeCity", "street", "10000"));
+
+            member.getFavoriteFoods().add("치킨");
+            member.getFavoriteFoods().add("족발");
+            member.getFavoriteFoods().add("피자");
+
+            member.getAddressHistory().add(new AddressEntity("old1", "street", "10000"));
+            member.getAddressHistory().add(new AddressEntity("old2", "street", "10000"));
+
             em.persist(member);
 
-            // Address를 복사한다.
-            Address copyAddress = new Address(address.getCity(), address.getStreet(), address.getZipCode());
+            em.flush();
+            em.clear();
 
-            Member2 member2 = new Member2();
-            member2.setName("Kim");
-            member2.setHomeAddress(copyAddress); // member2에 복사한 copyAddress를 사용한다.
-            em.persist(member2);
+            // 값 타입 조회 예제
+            System.out.println("======== START ========");
+            Member3 findMember = em.find(Member3.class, member.getId());
 
-            // member의 city만 변경된다.
-            // member.getHomeAddress().setCity("newCity");
+//            List<Address> addressHistory = findMember.getAddressHistory();
+//            for (Address address : addressHistory) {
+//                System.out.println("address = " + address.getCity());
+//            }
 
-            // setter를 사용하지 않고 생성자를 통해서 변경한다.
-            Address newAddress = new Address("newCity", address.getStreet(), address.getZipCode());
-            member.setHomeAddress(newAddress);
+            Set<String> favoriteFoods = findMember.getFavoriteFoods();
+            for (String favoriteFood : favoriteFoods) {
+                System.out.println("favoriteFood = " + favoriteFood);
+            }
+
+            // 값 타입 수정
+            // 치킨 -> 한식
+            // 단순 String 이기 때문에 제거 했다가 새로 삽입해야된다. (immutable)
+            findMember.getFavoriteFoods().remove("치킨");
+            findMember.getFavoriteFoods().add("한식");
+
+            // old1 -> new1
+//            findMember.getAddressHistory().remove(new Address("old1", "street", "10000")); // 반드시 equals(), hashCode()가 오버라이딩 되어있어야 한다.
+//            findMember.getAddressHistory().add(new Address("new1", "street", "10000"));
 
             tx.commit();
         } catch (Exception e) {
