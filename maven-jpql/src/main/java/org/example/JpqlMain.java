@@ -20,40 +20,42 @@ public class JpqlMain {
             team.setName("teamA");
             em.persist(team);
 
-            Member member = new Member();
-            member.setUsername("관리자");
-            member.setAge(10);
-            member.setType(MemberType.ADMIN);
-            member.changeTeam(team);
-            em.persist(member);
+            Member member1 = new Member();
+            member1.setUsername("관리자1");
+            em.persist(member1);
+
+            Member member2 = new Member();
+            member2.setUsername("관리자2");
+            em.persist(member2);
 
             em.flush();
             em.clear();
 
-            // ==== 기본 CASE 식 ====
-            String query1 = "select " +
-                    "case when m.age <= 10 then '학생요금' " +
-                    "when m.age >= 60 then '경로요금' " +
-                    "else '일반요금' end " +
-                    "from Member m";
-            List<String> result1 = em.createQuery(query1).getResultList();
+            // ==== JPQL 기본 함수 ====
+            String query1 = "select concat('a', 'b') from Member m";
+            // "select 'a' || 'b' from Member m"; <- 하이버네이트 구현체
+            List<String> result1 = em.createQuery(query1, String.class).getResultList();
 
-            // ==== 단순 CASE 식 ====
-            String query2 = "select " +
-                    "case t.name " +
-                    "when '팀A' then '인센티브110%' " +
-                    "when '팀B' then '인센티브120%' " +
-                    "else '인센티브105%' end " +
-                    "from Team t";
-            List<String> result2 = em.createQuery(query2).getResultList();
+            String query2 = "select substring(m.username, 2, 3) from Member m";
+            List<String> result2 = em.createQuery(query2, String.class).getResultList();
 
-            // ==== COALESCE ====
-            String query3 = "select coalesce(m.username, '이름 없는 회원') from Member m"; // 사용자 이름이 없으면 '이름 없는 회원'을 반환
-            List<String> result3 = em.createQuery(query3).getResultList();
+            String query3 = "select locate('de', 'abcdefg') from Member m"; // 4
+            List<Integer> result3 = em.createQuery(query3, Integer.class).getResultList();
 
-            // ==== NULLIF ====
-            String query4 = "select nullif(m.username, '관리자') from Member m"; // 사용자 이름이 ‘관리자’면 null을 반환하고 나머지는 본인의 이름을 반환
-            List<String> result4 = em.createQuery(query4).getResultList();
+            String query4 = "select size(t.members) from Team t"; // 컬렉션의 크기를 돌려줌
+            List<Integer> result4 = em.createQuery(query4, Integer.class).getResultList();
+
+            // @OrderColumn에 대해서
+            // @OneToMany(mappedBy = "team")
+            // @OrderColumn(name = "member_order")
+            // private List<Member> members = new ArrayList<>();
+            // String query5 = "select index(t.members) from Team t";
+            // List<Integer> result5 = em.createQuery(query5, Integer.class).getResultList();
+
+            // ==== 사용자 정의 함수 ====
+            String query6 = "select function('group_concat', m.username) from Member m";
+            // "select group_concat(m.username) from Member m"; <- 하이버네이트 구현체
+            List<String> result6 = em.createQuery(query6, String.class).getResultList();
 
             tx.commit();
         } catch (Exception e) {
