@@ -29,25 +29,19 @@ public class JpqlMain {
             em.flush();
             em.clear();
 
-            // ==== 내부 조인 ====
-            String query1 = "select m from Member m inner join m.team t"; // inner 생략 가능
+            // ==== 서브 쿼리 ====
+            String query1 = "select m from Member m where m.age > (select avg(m2.age) from Member m2)"; // 나이가 평균보다 많은 회원
             List<Member> result1 = em.createQuery(query1, Member.class).getResultList();
 
-            // ==== 외부 조인 ====
-            String query2 = "select m from Member m left outer join m.team t"; // outer 생략 가능
+            String query2 = "select m from Member m where exists (select t from m.team t where t.name = 'teamA')"; // 팀 A 소속인 회원
             List<Member> result2 = em.createQuery(query2, Member.class).getResultList();
+            System.out.println(result2);
 
-            // ==== 세타 조인 ====
-            String query3 = "select m from Member m, Team t where m.username = t.name"; // cross join
-            List<Member> result3 = em.createQuery(query3, Member.class).getResultList();
+            String query3 = "select o from Order o where o.orderAmount > all (select p.stockAmount from Product p)"; // 전체 상품 각각의 재고보다 주문량이 많은 주문들
+            List<Order> result3 = em.createQuery(query3, Order.class).getResultList();
 
-            // ==== ON 절 (조인 대상 필터링) ====
-            String query4 = "select m from Member m left join m.team t on t.name = 'teamA'";
+            String query4 = "select m from Member m where m.team = any (select t from Team t)"; // 어떤 팀이든 팀에 소속된 회원
             List<Member> result4 = em.createQuery(query4, Member.class).getResultList();
-
-            // ==== ON 절 (연관관계 없는 엔티티 외부 조인) ====
-            String query5 = "select m from Member m left join Team t on m.username = t.name"; // member의 username와 team의 name은 연관관계가 없음
-            List<Member> result5 = em.createQuery(query5, Member.class).getResultList();
 
             tx.commit();
         } catch (Exception e) {
