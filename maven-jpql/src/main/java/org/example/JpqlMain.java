@@ -16,26 +16,38 @@ public class JpqlMain {
         tx.begin();
 
         try {
-            for (int i = 0; i < 100; i++) {
-                Member member = new Member();
-                member.setUsername("member" + i);
-                member.setAge(i);
-                em.persist(member);
-            }
+            Team team = new Team();
+            team.setName("teamA");
+            em.persist(team);
+
+            Member member = new Member();
+            member.setUsername("teamA"); // 일부러 맞춤 (연관관계 없는 엔티티 외부 조인)
+            member.setAge(10);
+            member.changeTeam(team);
+            em.persist(member);
 
             em.flush();
             em.clear();
 
-            // ==== 페이징 ====
-            List<Member> result = em.createQuery("select m from Member m order by m.age", Member.class)
-                    .setFirstResult(0)
-                    .setMaxResults(10)
-                    .getResultList();
+            // ==== 내부 조인 ====
+            String query1 = "select m from Member m inner join m.team t"; // inner 생략 가능
+            List<Member> result1 = em.createQuery(query1, Member.class).getResultList();
 
-            System.out.println("result.size = " + result.size());
-            for (Member member : result) {
-                System.out.println(member);
-            }
+            // ==== 외부 조인 ====
+            String query2 = "select m from Member m left outer join m.team t"; // outer 생략 가능
+            List<Member> result2 = em.createQuery(query2, Member.class).getResultList();
+
+            // ==== 세타 조인 ====
+            String query3 = "select m from Member m, Team t where m.username = t.name"; // cross join
+            List<Member> result3 = em.createQuery(query3, Member.class).getResultList();
+
+            // ==== ON 절 (조인 대상 필터링) ====
+            String query4 = "select m from Member m left join m.team t on t.name = 'teamA'";
+            List<Member> result4 = em.createQuery(query4, Member.class).getResultList();
+
+            // ==== ON 절 (연관관계 없는 엔티티 외부 조인) ====
+            String query5 = "select m from Member m left join Team t on m.username = t.name"; // member의 username와 team의 name은 연관관계가 없음
+            List<Member> result5 = em.createQuery(query5, Member.class).getResultList();
 
             tx.commit();
         } catch (Exception e) {
