@@ -21,7 +21,7 @@ public class JpqlMain {
             em.persist(team);
 
             Member member = new Member();
-            member.setUsername("teamA"); // 일부러 맞춤 (연관관계 없는 엔티티 외부 조인)
+            member.setUsername("관리자");
             member.setAge(10);
             member.setType(MemberType.ADMIN);
             member.changeTeam(team);
@@ -30,24 +30,30 @@ public class JpqlMain {
             em.flush();
             em.clear();
 
-            // ==== Enum 조심 ====
-            String query1 = "select m.username, 'HELLO', TRUE from Member m where m.type = org.example.jpql.MemberType.ADMIN";
-            List<Object[]> result1 = em.createQuery(query1).getResultList();
+            // ==== 기본 CASE 식 ====
+            String query1 = "select " +
+                    "case when m.age <= 10 then '학생요금' " +
+                    "when m.age >= 60 then '경로요금' " +
+                    "else '일반요금' end " +
+                    "from Member m";
+            List<String> result1 = em.createQuery(query1).getResultList();
 
-            String query2 = "select m.username, 'HELLO', TRUE from Member m where m.type = :userType"; // 파라미터 바인딩
-            List<Object[]> result2 = em.createQuery(query2)
-                            .setParameter("userType", MemberType.ADMIN)
-                            .getResultList();
+            // ==== 단순 CASE 식 ====
+            String query2 = "select " +
+                    "case t.name " +
+                    "when '팀A' then '인센티브110%' " +
+                    "when '팀B' then '인센티브120%' " +
+                    "else '인센티브105%' end " +
+                    "from Team t";
+            List<String> result2 = em.createQuery(query2).getResultList();
 
-            // ITEM - BOOK 상속관계
-            /*String query3 = "select i from Item i where type(i) = Book";
-            em.createQuery(query3, Item.class).getResultList();*/
+            // ==== COALESCE ====
+            String query3 = "select coalesce(m.username, '이름 없는 회원') from Member m"; // 사용자 이름이 없으면 '이름 없는 회원'을 반환
+            List<String> result3 = em.createQuery(query3).getResultList();
 
-            String query4 = "select m.username, 'HELLO', TRUE from Member m where m.username is not null";
-            List<Object[]> result4 = em.createQuery(query4).getResultList();
-
-            String query5 = "select m.username, 'HELLO', TRUE from Member m where m.age between 0 and 10";
-            List<Object[]> result5 = em.createQuery(query5).getResultList();
+            // ==== NULLIF ====
+            String query4 = "select nullif(m.username, '관리자') from Member m"; // 사용자 이름이 ‘관리자’면 null을 반환하고 나머지는 본인의 이름을 반환
+            List<String> result4 = em.createQuery(query4).getResultList();
 
             tx.commit();
         } catch (Exception e) {
