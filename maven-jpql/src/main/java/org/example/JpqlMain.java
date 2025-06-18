@@ -16,42 +16,26 @@ public class JpqlMain {
         tx.begin();
 
         try {
-            Member member = new Member();
-            member.setUsername("member1");
-            member.setAge(10);
-            em.persist(member);
+            for (int i = 0; i < 100; i++) {
+                Member member = new Member();
+                member.setUsername("member" + i);
+                member.setAge(i);
+                em.persist(member);
+            }
 
             em.flush();
             em.clear();
 
-            // ==== 엔티티 프로젝션 ====
-            List<Member> result = em.createQuery("select m from Member m", Member.class).getResultList();
-            Member findMember = result.get(0);
-            findMember.setAge(20); // 해당 변경 사항이 반영됨 (엔티티 프로젝션은 영속성 컨텍스트에서 관리한다.)
+            // ==== 페이징 ====
+            List<Member> result = em.createQuery("select m from Member m order by m.age", Member.class)
+                    .setFirstResult(0)
+                    .setMaxResults(10)
+                    .getResultList();
 
-            List<Team> result2 = em.createQuery("select m.team from Member m", Team.class).getResultList(); // 해당 방식보다
-            List<Team> result3 = em.createQuery("select t from Member m join m.team t", Team.class).getResultList(); // 이 방식이 더 보기 좋다.
-
-            // ==== 임베디드 타입 프로젝션 ====
-            List<Address> result4 = em.createQuery("select o.address from Order o", Address.class).getResultList();
-
-            // ==== 스칼라 타입 프로젝션 ====
-            em.createQuery("select m.username, m.age from Member m").getResultList();
-            // 1. Query 타입으로 조회
-            List result5 = em.createQuery("select m.username, m.age from Member m").getResultList();
-            Object o = result5.get(0);
-            Object[] res1 = (Object[]) o;
-            System.out.println("username: " + res1[0]);
-            System.out.println("age: " + res1[1]);
-            // 2. Object[] 타입으로 조회
-            List<Object[]> result6 = em.createQuery("select m.username, m.age from Member m").getResultList();
-            Object[] res2 = (Object[]) result6.get(0);
-            System.out.println("username: " + res2[0]);
-            System.out.println("age: " + res2[1]);
-            // 3. new 명령어로 조회 (제일 권장)
-            List<MemberDto> result7 = em.createQuery("select new org.example.jpql.MemberDto(m.username, m.age) from Member m", MemberDto.class).getResultList(); // 패키지 경로는 QueryDSL로 극복 가능
-            System.out.println("username: " + result7.get(0).getUsername());
-            System.out.println("age: " + result7.get(0).getAge());
+            System.out.println("result.size = " + result.size());
+            for (Member member : result) {
+                System.out.println(member);
+            }
 
             tx.commit();
         } catch (Exception e) {
