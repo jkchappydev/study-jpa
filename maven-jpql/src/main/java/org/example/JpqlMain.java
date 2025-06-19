@@ -22,40 +22,31 @@ public class JpqlMain {
 
             Member member1 = new Member();
             member1.setUsername("관리자1");
+            member1.changeTeam(team);
             em.persist(member1);
 
             Member member2 = new Member();
             member2.setUsername("관리자2");
+            member2.changeTeam(team);
             em.persist(member2);
 
             em.flush();
             em.clear();
 
-            // ==== JPQL 기본 함수 ====
-            String query1 = "select concat('a', 'b') from Member m";
-            // "select 'a' || 'b' from Member m"; <- 하이버네이트 구현체
-            List<String> result1 = em.createQuery(query1, String.class).getResultList();
+            // ==== 상태필드 (m.username 이후로 더 탐색할 수 없음) ====
+            String query1 = "select m.username from Member m";
 
-            String query2 = "select substring(m.username, 2, 3) from Member m";
-            List<String> result2 = em.createQuery(query2, String.class).getResultList();
+            // 실무에서 사용 금지
+            // ==== 단일 값 연관 경로 (m.team 이후로 탐색 가능 (ex: m.team.name)) ====
+            String query2 = "select m.team from Member m"; // 묵시적 내부 조인 발생 (Member에 연관된 Team을 가져와야 하기 때문에)
+            List<Team> result2 = em.createQuery(query2, Team.class).getResultList();
 
-            String query3 = "select locate('de', 'abcdefg') from Member m"; // 4
-            List<Integer> result3 = em.createQuery(query3, Integer.class).getResultList();
+            // ==== 컬렉션 값 연관 경로 ====
+            String query3 = "select t.members.size from Team t"; // t.members = @OneToMany
+            Integer result3 = em.createQuery(query3, Integer.class).getSingleResult();
 
-            String query4 = "select size(t.members) from Team t"; // 컬렉션의 크기를 돌려줌
-            List<Integer> result4 = em.createQuery(query4, Integer.class).getResultList();
-
-            // @OrderColumn에 대해서
-            // @OneToMany(mappedBy = "team")
-            // @OrderColumn(name = "member_order")
-            // private List<Member> members = new ArrayList<>();
-            // String query5 = "select index(t.members) from Team t";
-            // List<Integer> result5 = em.createQuery(query5, Integer.class).getResultList();
-
-            // ==== 사용자 정의 함수 ====
-            String query6 = "select function('group_concat', m.username) from Member m";
-            // "select group_concat(m.username) from Member m"; <- 하이버네이트 구현체
-            List<String> result6 = em.createQuery(query6, String.class).getResultList();
+            String query4 = "select m.username from Team t join t.members m"; // t.members의 username을 가져오고 싶으면, 명시적으로 조인
+            List<String> result4 = em.createQuery(query4, String.class).getResultList();
 
             tx.commit();
         } catch (Exception e) {
