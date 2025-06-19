@@ -50,51 +50,33 @@ public class JpqlMain {
             em.flush();
             em.clear();
 
-            // ==== 엔티티 패치 조인 ====
-            // ==== fetch 사용 X ====
-            String query = "select m from Member m";
-            List<Member> result = em.createQuery(query, Member.class).getResultList();
-            for (Member member : result) {
-                // 현재, Team team이 FetchType.LAZY 설정되어 있어서 (지연로딩) Team객체는 Proxy로 들어오고, Team을 실제 사용하는 시점(member.getTeam().getName())마다 Team 조회 쿼리가 호출된다.
-                // 회원1, 팀A(SQL 조회) <- '팀A'는 영속성 컨텍스트에 없음
-                // 회원2, 팀A(영속성 컨텍스트)
-                // =======
-                // 회원3, 팀B(SQL 조회) <- '팀B'는 영속성 컨텍스트에 없음
-                // N+1 문제 발생 (Member 조회 쿼리 1번 + Team 조회 쿼리 (Member 수만큼 Team 조회 쿼리) -> fetch 조인으로 해결
-                System.out.println("member = " + member.getUsername() + ", " + member.getTeam().getName());
-            }
+            // ==== 엔티티 직접 사용 - 기본키 값 ====
+            // 1. 엔티티를 파라미터로 전달
+            String query = "select m from Member m where m = :member";
+            Member findMember = em.createQuery(query, Member.class)
+                    .setParameter("member", member1)
+                    .getSingleResult();
 
-            // ==== fetch 사용 O ====
-            String fetchQuery = "select m from Member m inner join fetch m.team";
-            List<Member> fetchResult = em.createQuery(fetchQuery, Member.class).getResultList();
-            for (Member member : fetchResult) {
-                // Member와 Team을 한 번에 가져온다 (inner join으로 가져옴)
-                // Team은 FetchType.LAZY로 설정되어 있어도, Proxy를 가져온것이 아닌 진짜 데이터를 가져온다.
-                System.out.println("member = " + member.getUsername() + ", " + member.getTeam().getName());
-            }
+            // 2. 식별자를 직접 전달
+            String query2 = "select m from Member m where m.id = :memberId";
+            Long memberId = member1.getId();
+            Member findMember2 = em.createQuery(query2, Member.class)
+                    .setParameter("memberId", memberId)
+                    .getSingleResult();
 
-            // ==== 컬렉션 패치 조인 ====
-            String fetchQuery2 = "select t from Team t inner join fetch t.members";
-            List<Team> fetchResult2 = em.createQuery(fetchQuery2, Team.class).getResultList();
-            for (Team team : fetchResult2) {
-                System.out.println("team = " + team.getName() + ", " + team.getMembers().size());
-            }
+            // ==== 엔티티 직접 사용 - 외래키 값 ====
+            // 1. 엔티티를 파라미터로 전달
+            String query3 = "select m from Member m where m.team = :team";
+            List<Member> findMember3 = em.createQuery(query3, Member.class)
+                    .setParameter("team", team1)
+                    .getResultList();
 
-            // ==== Fetch 조인과 DISTINCT ====
-            String fetchQuery3 = "select distinct t from Team t inner join fetch t.members";
-            List<Team> fetchResult3 = em.createQuery(fetchQuery3, Team.class).getResultList();
-            for (Team team : fetchResult3) {
-                System.out.println("team = " + team.getName() + ", " + team.getMembers().size());
-            }
-
-            // ==== Fetch 조인과 일반 조인 차이 ====
-            // 일반 조인
-            String query2 = "select t from Team t join t.members";
-            List<Team> result2 = em.createQuery(query2, Team.class).getResultList();
-
-            // Fetch 조인
-            String fetchQuery4 = "select t from Team t join fetch t.members";
-            List<Team> fetchResult4 = em.createQuery(fetchQuery4, Team.class).getResultList();
+            // 2. 식별자를 직접 전달
+            String query4 = "select m from Member m where m.team.id = :teamId";
+            Long teamId = team1.getId();
+            List<Member> findMember4 = em.createQuery(query4, Member.class)
+                    .setParameter("teamId", teamId)
+                    .getResultList();
 
             tx.commit();
         } catch (Exception e) {
