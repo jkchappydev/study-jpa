@@ -50,33 +50,14 @@ public class JpqlMain {
             em.flush();
             em.clear();
 
-            // ==== 엔티티 직접 사용 - 기본키 값 ====
-            // 1. 엔티티를 파라미터로 전달
-            String query = "select m from Member m where m = :member";
-            Member findMember = em.createQuery(query, Member.class)
-                    .setParameter("member", member1)
-                    .getSingleResult();
+            // ==== NamedQuery ====
+            List<Member> result = em.createNamedQuery("Member.findByUsername", Member.class)
+                            .setParameter("username", "회원1")
+                            .getResultList();
 
-            // 2. 식별자를 직접 전달
-            String query2 = "select m from Member m where m.id = :memberId";
-            Long memberId = member1.getId();
-            Member findMember2 = em.createQuery(query2, Member.class)
-                    .setParameter("memberId", memberId)
-                    .getSingleResult();
-
-            // ==== 엔티티 직접 사용 - 외래키 값 ====
-            // 1. 엔티티를 파라미터로 전달
-            String query3 = "select m from Member m where m.team = :team";
-            List<Member> findMember3 = em.createQuery(query3, Member.class)
-                    .setParameter("team", team1)
-                    .getResultList();
-
-            // 2. 식별자를 직접 전달
-            String query4 = "select m from Member m where m.team.id = :teamId";
-            Long teamId = team1.getId();
-            List<Member> findMember4 = em.createQuery(query4, Member.class)
-                    .setParameter("teamId", teamId)
-                    .getResultList();
+            for (Member member : result) {
+                System.out.println(member);
+            }
 
             tx.commit();
         } catch (Exception e) {
