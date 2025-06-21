@@ -50,14 +50,12 @@ public class JpqlMain {
             em.flush();
             em.clear();
 
-            // ==== NamedQuery ====
-            List<Member> result = em.createNamedQuery("Member.findByUsername", Member.class)
-                            .setParameter("username", "회원1")
-                            .getResultList();
+            // ==== 벌크 연산 ====
+            String query = "update Member m set m.age = :age";
+            int resultCount = em.createQuery(query).setParameter("age", 20).executeUpdate();
+            System.out.println("resultCount = " + resultCount); // resultCount = 4
 
-            for (Member member : result) {
-                System.out.println(member);
-            }
+            em.clear(); // 벌크 연산 이후 영속성 컨텍스트 초기화
 
             tx.commit();
         } catch (Exception e) {
